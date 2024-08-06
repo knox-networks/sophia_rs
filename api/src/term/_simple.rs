@@ -59,22 +59,20 @@ impl<'a> Term for SimpleTerm<'a> {
     fn datatype(&self) -> Option<IriRef<MownStr>> {
         match self {
             LiteralDatatype(_, iri) => Some(IriRef::new_unchecked(iri.borrowed())),
-            LiteralLanguage(..) => {
-                Some(IriRef::new_unchecked(MownStr::from_slice(&RDF_LANG_STRING)))
-            }
+            LiteralLanguage(..) => Some(IriRef::new_unchecked(MownStr::from_ref(&RDF_LANG_STRING))),
             _ => None,
         }
     }
     fn language_tag(&self) -> Option<LanguageTag<MownStr>> {
         if let LiteralLanguage(_, tag) = self {
-            Some(LanguageTag::new_unchecked(MownStr::from_slice(tag)))
+            Some(LanguageTag::new_unchecked(MownStr::from_ref(tag)))
         } else {
             None
         }
     }
     fn variable(&self) -> Option<VarName<MownStr>> {
         if let Variable(name) = self {
-            Some(VarName::new_unchecked(MownStr::from_slice(name)))
+            Some(VarName::new_unchecked(MownStr::from_ref(name)))
         } else {
             None
         }
@@ -226,7 +224,7 @@ mod test {
 
     #[test]
     fn iri_from_scratch() {
-        let value = IriRef::new_unchecked(MownStr::from_slice("http://example.org/"));
+        let value = IriRef::new_unchecked(MownStr::from_ref("http://example.org/"));
         let t = SimpleTerm::Iri(value.clone());
         assert_consistent_term_impl(&t);
         assert_eq!(t.borrow_term(), &t);
@@ -236,7 +234,7 @@ mod test {
 
     #[test]
     fn bnode_from_scratch() {
-        let value = BnodeId::new_unchecked(MownStr::from_slice("b1"));
+        let value = BnodeId::new_unchecked(MownStr::from_ref("b1"));
         let t = SimpleTerm::BlankNode(value.clone());
         assert_consistent_term_impl(&t);
         assert_eq!(t.borrow_term(), &t);
@@ -246,8 +244,8 @@ mod test {
 
     #[test]
     fn literal_dt_from_scratch() {
-        let value = MownStr::from_slice("hello world");
-        let datatype = IriRef::new_unchecked(MownStr::from_slice("http://example.org/"));
+        let value = MownStr::from_ref("hello world");
+        let datatype = IriRef::new_unchecked(MownStr::from_ref("http://example.org/"));
         let t = SimpleTerm::LiteralDatatype(value.clone(), datatype.clone());
         assert_consistent_term_impl(&t);
         assert_eq!(t.borrow_term(), &t);
@@ -258,8 +256,8 @@ mod test {
 
     #[test]
     fn literal_lang_from_scratch() {
-        let value = MownStr::from_slice("hello world");
-        let tag = LanguageTag::new_unchecked(MownStr::from_slice("en-US"));
+        let value = MownStr::from_ref("hello world");
+        let tag = LanguageTag::new_unchecked(MownStr::from_ref("en-US"));
         let t = SimpleTerm::LiteralLanguage(value.clone(), tag.clone());
         assert_consistent_term_impl(&t);
         assert_eq!(t.borrow_term(), &t);
@@ -270,7 +268,7 @@ mod test {
 
     #[test]
     fn variable_from_scratch() {
-        let value = VarName::new_unchecked(MownStr::from_slice("x"));
+        let value = VarName::new_unchecked(MownStr::from_ref("x"));
         let t = SimpleTerm::Variable(value.clone());
         assert_consistent_term_impl(&t);
         assert_eq!(t.borrow_term(), &t);
@@ -280,8 +278,8 @@ mod test {
 
     #[test]
     fn triple_from_scratch() {
-        let s: SimpleTerm<'_> = BnodeId::new_unchecked(MownStr::from_slice("s")).into_term();
-        let p: SimpleTerm<'_> = IriRef::new_unchecked(MownStr::from_slice("p")).into_term();
+        let s: SimpleTerm<'_> = BnodeId::new_unchecked(MownStr::from_ref("s")).into_term();
+        let p: SimpleTerm<'_> = IriRef::new_unchecked(MownStr::from_ref("p")).into_term();
         let o: SimpleTerm<'_> = "o".into_term();
         let spo = [s.clone(), p.clone(), o.clone()];
         let t = SimpleTerm::Triple(Box::new(spo.clone()));
@@ -304,8 +302,8 @@ mod test {
 
     #[test]
     fn nested_triple_from_scratch() {
-        let s1: SimpleTerm<'_> = BnodeId::new_unchecked(MownStr::from_slice("s")).into_term();
-        let p1: SimpleTerm<'_> = IriRef::new_unchecked(MownStr::from_slice("p")).into_term();
+        let s1: SimpleTerm<'_> = BnodeId::new_unchecked(MownStr::from_ref("s")).into_term();
+        let p1: SimpleTerm<'_> = IriRef::new_unchecked(MownStr::from_ref("p")).into_term();
         let o1: SimpleTerm<'_> = "o".into_term();
         let spo1 = [s1.clone(), p1.clone(), o1.clone()];
         let t1 = SimpleTerm::Triple(Box::new(spo1));
@@ -368,8 +366,8 @@ mod test {
 
     #[test]
     fn triple_from_term() {
-        let s: SimpleTerm<'_> = BnodeId::new_unchecked(MownStr::from_slice("s")).into_term();
-        let p: SimpleTerm<'_> = IriRef::new_unchecked(MownStr::from_slice("p")).into_term();
+        let s: SimpleTerm<'_> = BnodeId::new_unchecked(MownStr::from_ref("s")).into_term();
+        let p: SimpleTerm<'_> = IriRef::new_unchecked(MownStr::from_ref("p")).into_term();
         let o: SimpleTerm<'_> = "o".into_term();
         let spo = [s.clone(), p.clone(), o.clone()];
         let tr = SimpleTerm::from_triple(spo.spo());
@@ -441,8 +439,8 @@ mod test {
 
     #[test]
     fn triple_from_term_ref() {
-        let s: SimpleTerm<'_> = BnodeId::new_unchecked(MownStr::from_slice("s")).into_term();
-        let p: SimpleTerm<'_> = IriRef::new_unchecked(MownStr::from_slice("p")).into_term();
+        let s: SimpleTerm<'_> = BnodeId::new_unchecked(MownStr::from_ref("s")).into_term();
+        let p: SimpleTerm<'_> = IriRef::new_unchecked(MownStr::from_ref("p")).into_term();
         let o: SimpleTerm<'_> = "o".into_term();
         let spo = [s.clone(), p.clone(), o.clone()];
         let tr = SimpleTerm::from_triple(spo.spo());
@@ -451,7 +449,7 @@ mod test {
         assert_eq!(t.kind(), TermKind::Triple);
         let inner_s = t.to_atoms().next().unwrap();
         // into_term does a reallocation
-        assert!(inner_s.bnode_id().unwrap().unwrap().is_owned());
+        assert!(inner_s.bnode_id().unwrap().unwrap().is_borrowed());
     }
 
     #[test]
